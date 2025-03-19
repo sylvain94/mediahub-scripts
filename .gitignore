@@ -1,1 +1,36 @@
-mediahub-scripts.code-workspace
+# Fichiers d'environnement
+.env
+.env.local
+.env.*.local
+
+# Fichiers de workspace
+*.code-workspace
+.vscode/
+.idea/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dépendances
+node_modules/
+dist/
+dist-ssr/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de build
+/build
+/dist
+
+# Fichiers temporaires
+*.swp
+*.swo
+*~
