@@ -2,6 +2,9 @@
 
 ## 1. Start the script analysis.sh
 
+In the analysis.sh file, change the file_name (here : mire_720p.ts) : 
+INPUT_FILE_NAME="mire_720p.ts"
+
 The script starts tsduck, anaylize your ts file and then create service_info_tsduck.json.
 
 ```shell
