@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVB Analysis</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .json-container {
+            margin: 20px;
+        }
+        .json-container pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .json-key {
+            font-weight: bold;
+        }
+        .json-value {
+            color: #007BFF;
+        }
+        .json-string {
+            color: #28A745;
+        }
+        .json-number {
+            color: #FFC107;
+        }
+        .json-boolean {
+            color: #DC3545;
+        }
+        .json-null {
+            color: #6C757D;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container json-container">
+    <h1 class="mt-4 mb-4">DVB Analysis</h1>
+    <div id="ts-info"></div>
+    <div id="services-info"></div>
+</div>
+
+<script>
+    function fetchJsonData() {
+        fetch('service_info_tsduck.json')
+            .then(response => response.json())
+            .then(data => {
+                renderData(data);
+            })
+            .catch(error => console.error('Error fetching JSON data:', error));
+    }
+
+    function renderData(jsonData) {
+        const tsContainer = document.getElementById('ts-info');
+        const servicesContainer = document.getElementById('services-info');
+
+        tsContainer.innerHTML = renderTsInfo(jsonData);
+        servicesContainer.innerHTML = jsonData.services.map(renderService).join('');
+    }
+
+    function renderTsInfo(tsData) {
+        return `
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>TS Info</h2>
+                </div>
+                <div class="card-body">
+                    <p><span class="json-key">TS bitrate:</span> <span class="json-number">${tsData.ts.bitrate}</span></p>
+                    <p><span class="json-key">Total Services:</span> <span class="json-number">${tsData.services.length}</span></p>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderService(service) {
+        return `
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>${service.name}</h3>
+                </div>
+                <div class="card-body">
+                    <p><span class="json-key">Service Id:</span> <span class="json-number">${service.id}</span></p>
+                    <p><span class="json-key">Type:</span> <span class="json-string">${service['type-name']}</span></p>
+                    <p><span class="json-key">Provider:</span> <span class="json-string">${service.provider}</span></p>                    
+                    <p><span class="json-key">Bitrate:</span> <span class="json-number">${service.bitrate}</span></p>
+                    <h4>PIDs</h4>
+                    ${service.pids.map(renderPid).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPid(pid) {
+        return `
+            <div class="card mb-2">
+                <div class="card-body">
+                    <p><span class="json-key">ID:</span> <span class="json-number">${pid.id}</span></p>
+                    <p><span class="json-key">Description:</span> <span class="json-string">${pid.description}</span></p>
+                    <p><span class="json-key">Bitrate:</span> <span class="json-number">${pid.bitrate}</span></p>
+                </div>
+            </div>
+        `;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchJsonData();
+        setInterval(fetchJsonData, 2000); // Refresh data every 2 seconds
+    });
+</script>
+</body>
+</html>

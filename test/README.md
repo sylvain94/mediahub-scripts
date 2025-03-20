@@ -1,6 +1,9 @@
 # How to create a file analysis
 
 ## 1. Start the script analyis.sh
+
+The script starts tsduck and anaylize your ts file. It will create service_info_tsduck.json and the result of the analysis will be displayed in your browser.
+
 ```shell
 chmod +x analysis.sh
 ./analysis.sh
