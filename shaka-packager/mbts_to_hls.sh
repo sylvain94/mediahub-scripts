@@ -52,19 +52,20 @@ echo "Dossier de sortie : ${OUTPUT_DIR}"
 echo "Segments : 10 secondes (.ts)"
 echo
 
-${PACKAGER_BIN} \
-  "input=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8" \
-  "input=udp://${MULTICAST_IP}:${PORT_SD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_480p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8" \
-  --hls_playlist_type LIVE \
-  --segment_duration 10 \
-  --time_shift_buffer_depth 600 \
-  --preserved_segments_outside_live_window 10
-
 echo
 echo "Packaging LIVE terminé."
 echo "Playlists HLS :"
 echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8"
 echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8"
 echo "Tu peux les lire avec un player HLS (VLC, hls.js, etc.)."
+
+${PACKAGER_BIN} \
+  "input=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8" \
+  "input=udp://${MULTICAST_IP}:${PORT_SD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_480p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8" \
+  --hls_playlist_type LIVE \
+  --segment_duration 10 \
+  --hls_time 10 \
+  --preserved_segments_outside_live_window 10 \
+  --hls_master_playlist_output ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8
 
 
