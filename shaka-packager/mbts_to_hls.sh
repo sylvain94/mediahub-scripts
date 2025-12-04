@@ -5,7 +5,7 @@
 # - Flux 1 (HD)  : udp://239.0.0.1:2001 (720p)
 # - Flux 2 (SD)  : udp://239.0.0.1:2002 (480p)
 # - Segments HLS : 10 secondes (.ts)
-# - Structure : service01/service01_720p.m3u8 et service01/service01_480p.m3u8
+# - Structure : service01/720p.m3u8 et service01/480p.m3u8
 ###############################################################################
 
 set -e
@@ -35,8 +35,8 @@ PACKAGER_BIN="packager"
 ############
 
 # Créer la structure de dossiers
-mkdir -p "${OUTPUT_DIR}/${SERVICE_ID}_720p"
-mkdir -p "${OUTPUT_DIR}/${SERVICE_ID}_480p"
+mkdir -p "${OUTPUT_DIR}/720p"
+mkdir -p "${OUTPUT_DIR}/480p"
 
 ############
 # Exécution
@@ -62,47 +62,14 @@ echo
 
 # Note: Pour les flux MPEG-TS, shaka-packager détecte automatiquement les streams vidéo et audio
 # Format de numérotation: $Number$ pour numérotation simple, $Number%02d$ pour padding avec zéros
+# Dans bash, les $ doivent être échappés avec \$
 ${PACKAGER_BIN} \
-  "in=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8,hls_name=720p" \
-  "in=udp://${MULTICAST_IP}:${PORT_SD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_480p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8,hls_name=480p" \
+  "in=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/720p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/720p.m3u8,hls_name=720p" \
+  "in=udp://${MULTICAST_IP}:${PORT_SD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/480p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/480p.m3u8,hls_name=480p" \
   --hls_playlist_type LIVE \
   --segment_duration 10 \
   --time_shift_buffer_depth 600 \
   --preserved_segments_outside_live_window 10 \
-  --hls_master_playlist_output "${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8" \
-  --v=1 \
-  2>&1 | tee "${OUTPUT_DIR}/packager.log"
-
-# Vérifier si les playlists ont été créées
-echo
-echo "Vérification des fichiers créés..."
-if [ -f "${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8" ]; then
-  echo "✓ ${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8 créé"
-else
-  echo "✗ ${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8 NON créé"
-fi
-
-if [ -f "${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8" ]; then
-  echo "✓ ${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8 créé"
-else
-  echo "✗ ${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8 NON créé"
-fi
-
-if [ -f "${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8" ]; then
-  echo "✓ ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8 créé"
-else
-  echo "✗ ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8 NON créé"
-fi
-
-echo
-echo "Logs disponibles dans : ${OUTPUT_DIR}/packager.log"
-
-echo
-echo "Packaging LIVE terminé."
-echo "Playlists HLS :"
-echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8"
-echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8"
-echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8"
-echo "Tu peux les lire avec un player HLS (VLC, hls.js, etc.)."
-
+  --hls_master_playlist_output "${OUTPUT_DIR}/master.m3u8" \
+  --v=1
 

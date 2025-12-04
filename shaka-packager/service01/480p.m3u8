@@ -3,6 +3,8 @@
 ## Generated with https://github.com/shaka-project/shaka-packager version v3.4.2-c819dea-release
 #EXT-X-TARGETDURATION:11
 #EXTINF:8.555,
-service01_480p/service01_01.ts
+480p/service01_01.ts
 #EXTINF:10.005,
-service01_480p/service01_02.ts
+480p/service01_02.ts
+#EXTINF:9.984,
+480p/service01_03.ts
