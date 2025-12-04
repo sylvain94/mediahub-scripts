@@ -52,20 +52,57 @@ echo "Dossier de sortie : ${OUTPUT_DIR}"
 echo "Segments : 10 secondes (.ts)"
 echo
 
+# Pour les flux MPEG-TS multicast, on spécifie les streams vidéo et audio séparément
+# mais ils seront combinés dans le même segment TS pour HLS
+echo "Démarrage du packaging..."
+echo "Commande exécutée :"
+echo "  ${PACKAGER_BIN} \\"
+echo "    in=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP} ..."
+echo
+
+# Note: Pour les flux MPEG-TS, shaka-packager détecte automatiquement les streams vidéo et audio
+# Format de numérotation: $Number$ pour numérotation simple, $Number%02d$ pour padding avec zéros
+${PACKAGER_BIN} \
+  "in=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8,hls_name=720p" \
+  "in=udp://${MULTICAST_IP}:${PORT_SD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_480p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8,hls_name=480p" \
+  --hls_playlist_type LIVE \
+  --segment_duration 10 \
+  --time_shift_buffer_depth 600 \
+  --preserved_segments_outside_live_window 10 \
+  --hls_master_playlist_output "${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8" \
+  --v=1 \
+  2>&1 | tee "${OUTPUT_DIR}/packager.log"
+
+# Vérifier si les playlists ont été créées
+echo
+echo "Vérification des fichiers créés..."
+if [ -f "${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8" ]; then
+  echo "✓ ${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8 créé"
+else
+  echo "✗ ${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8 NON créé"
+fi
+
+if [ -f "${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8" ]; then
+  echo "✓ ${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8 créé"
+else
+  echo "✗ ${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8 NON créé"
+fi
+
+if [ -f "${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8" ]; then
+  echo "✓ ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8 créé"
+else
+  echo "✗ ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8 NON créé"
+fi
+
+echo
+echo "Logs disponibles dans : ${OUTPUT_DIR}/packager.log"
+
 echo
 echo "Packaging LIVE terminé."
 echo "Playlists HLS :"
 echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8"
 echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8"
+echo "  - ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8"
 echo "Tu peux les lire avec un player HLS (VLC, hls.js, etc.)."
-
-${PACKAGER_BIN} \
-  "input=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_720p.m3u8" \
-  "input=udp://${MULTICAST_IP}:${PORT_SD}?interface=${LOCAL_IF_IP},stream=video,stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_480p/${SERVICE_ID}_\$Number%02d\$.ts,playlist_name=${OUTPUT_DIR}/${SERVICE_ID}_480p.m3u8" \
-  --hls_playlist_type LIVE \
-  --segment_duration 10 \
-  --hls_time 10 \
-  --preserved_segments_outside_live_window 10 \
-  --hls_master_playlist_output ${OUTPUT_DIR}/${SERVICE_ID}_master.m3u8
 
 
