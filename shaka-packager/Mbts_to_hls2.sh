@@ -55,29 +55,16 @@ echo
 # Pour les flux MPEG-TS multicast, on spécifie les streams vidéo et audio séparément
 # mais ils seront combinés dans le même segment TS pour HLS
 echo "Démarrage du packaging..."
-echo "Commande exécutée :"
-echo "  ${PACKAGER_BIN} \\"
-echo "    in=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP} ..."
-echo
+echo "Playlist URL : http://${MULTICAST_IP}:${PORT_HD}/${OUTPUT_DIR}/master.m3u8"
 
-# IMPORTANT: Shaka-packager a des limitations pour créer des segments HLS TS avec vidéo+audio
-# multiplexés à partir de flux MPEG-TS. Il exige des segment_template UNIQUES par stream.
-# 
-# Solution: Utiliser un seul input SANS spécifier stream= pour que shaka-packager traite
-# le flux TS comme un transport stream complet. Cependant, cela peut ne pas fonctionner
-# car shaka-packager peut toujours exiger des streams spécifiques.
-#
-# Alternative recommandée: Utiliser ffmpeg qui gère mieux ce cas d'usage.
+
+# Note: Shaka-packager exige des segment_template UNIQUES pour chaque stream.
+# Pour chaque palier, on spécifie vidéo et audio séparément avec des templates différents.
 # Format de numérotation: $Number$ pour numérotation simple, $Number%02d$ pour padding avec zéros
 # Dans bash, les $ doivent être échappés avec \$
-
-# Tentative avec un seul input par palier (sans spécifier stream)
-# Si cela ne fonctionne pas, il faudra utiliser ffmpeg à la place
 ${PACKAGER_BIN} \
-  "input=udp://${MULTICAST_IP}:${PORT_720}?interface=${LOCAL_IF_IP},stream=video,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%05d\$-v.ts,playlist_name=${SERVICE_ID}_720p-v.m3u8" \
-  "input=udp://${MULTICAST_IP}:${PORT_720}?interface=${LOCAL_IF_IP},stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%05d\$-a.ts,playlist_name=${SERVICE_ID}_720p-a.m3u8" \
-  "input=udp://${MULTICAST_IP}:${PORT_480}?interface=${LOCAL_IF_IP},stream=video,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_480p/${SERVICE_ID}_\$Number%05d\$-v.ts,playlist_name=${SERVICE_ID}_480p-v.m3u8" \
-  "input=udp://${MULTICAST_IP}:${PORT_480}?interface=${LOCAL_IF_IP},stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_480p/${SERVICE_ID}_\$Number%05d\$-a.ts,playlist_name=${SERVICE_ID}_480p-a.m3u8" \
+  "input=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=video,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%05d\$-v.ts,playlist_name=${SERVICE_ID}_720p-v.m3u8" \
+  "input=udp://${MULTICAST_IP}:${PORT_HD}?interface=${LOCAL_IF_IP},stream=audio,segment_template=${OUTPUT_DIR}/${SERVICE_ID}_720p/${SERVICE_ID}_\$Number%05d\$-a.ts,playlist_name=${SERVICE_ID}_720p-a.m3u8" \
   --segment_duration 10 \
   --time_shift_buffer_depth 60 \
   --preserved_segments_outside_live_window 2\
