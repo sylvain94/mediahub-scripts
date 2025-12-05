@@ -13,7 +13,7 @@ preset_ott_standard=""
 preset_ott_basic=""
 
 
-ffmpeg -i 20th.mkv \
+ffmpeg -i 20th.ts \
 -filter_complex \
 "[0:v]split=3[v1][v2][v3]; \
 [v1]copy[v1out]; [v2]scale=w=1280:h=720[v2out]; [v3]scale=w=640:h=360[v3out]" \
